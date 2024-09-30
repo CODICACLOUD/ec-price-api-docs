@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  title: Ecommerce - Price API
+  contact:
+    email: support@codica.gr
+  version: '1.0'
+servers:
+  - url: https://dev-new.xpatit.gr/api/v1/ec-price
+tags:
+  - name: ec-tax-category
+    description: Management of tax categories
+
+paths:
+  /ec-tax-category:
+    get:
+      tags:
+        - ec-tax-category
+      summary: Get tax categories
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: The numbers of items to return
+          required: true
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: enabled
+          schema:
+            type: boolean
+          description: To get enabled tax categories
+        - in: query
+          name: retail_wholesale
+          schema:
+            type: string
+            enum: [retail, wholesale]
+        - in: query
+          name: countryIds
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+            description: To get tax categories based on country
+          style: form
+          explode: false
+        - in: query
+          name: stateIds
+          schema:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+            description: To get tax categories based on state
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tax_categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TaxCategory'
+        '400':
+          $ref: '#/components/responses/ValidatorError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/MissingAbilityError'
+security:
+  - bearerAuth: []
+components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    MissingAbilityError:
+      description: Token doesn't not have all required abilities
+    ValidatorError:
+      description: The required fields are not present/correct.
+  schemas:
+    TaxCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          minimum: 1
+        enabled:
+          type: boolean
+          example: true
+        retail_wholesale:
+          type: string
+          example: "retail"
+          enum: ["retail", "wholesale"]
+        ec_country_ids:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            example: 83
+        ec_state_ids:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          example: []
+        zip_range:
+          $ref: '#/components/schemas/ZipRagneSchema'
+        translations:
+          $ref: '#/components/schemas/TaxCategoryTranslations'
+    ZipRagneSchema:
+      type: object
+      properties:
+        0:
+          type: object
+          properties:
+            order:
+              type: integer
+              example: 10
+            min_zip:
+              type: string
+              example: "85400"
+            max_zip:
+              type: string
+              example: "85400"
+    TaxCategoryTranslations:
+      type: object
+      properties:
+        locale:
+          type: object
+          properties:
+            title:
+              type: string
+              example: "locale's title"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
